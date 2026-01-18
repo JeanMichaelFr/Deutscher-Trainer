@@ -55,7 +55,11 @@ function speakSeq(arr){let j=0;function n(){if(j>=arr.length)return;speak(arr[j]
 function renderSide(){prev3.textContent=list.slice(Math.max(0,i-3),i).join(' · ');next3.textContent=list.slice(i+1,i+4).join(' · ')}
 function prev(){i=(i-1+list.length)%list.length;render()}
 function next(){i=(i+1)%list.length;render()}
-pldBtn.onclick=()=>toggle('PL-D');dplBtn.onclick=()=>toggle('D-PL');
+pldBtn.onclick = () => {
+  speechSynthesis.speak(new SpeechSynthesisUtterance(""));
+  toggle("PL-D");
+};
+
 function toggle(m){if(mode===m){mode=null;panel.style.display='none';stop();return}mode=m;panel.style.display='block';i=0;render();loop()}
 testBtn.onclick=()=>{test=!test;testBtn.textContent=test?'🧪 Test ON':'🧪 Test OFF';if(!test)loop();else stop()}
 document.addEventListener('pointerdown',e=>{if(!test||waiting)return;waiting=false;next()})
