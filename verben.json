@@ -1,22 +1,32 @@
 {
- "abschneiden": {
+  "abschneiden": {
     "pl": "obcinać",
     "de": "abschneiden",
-    "PRÄTERITUM": "schnitt … ab",
-    "PERFEKT": "hat abgeschnitten",
-        },
- "anbieten": {
+    "PRÄTERITUM": "schnitt ab",
+    "PERFEKT": "hat abgeschnitten"
+  },
+  "anbieten": {
     "pl": "oferować",
     "de": "anbieten",
-    "PRÄTERITUM": "bot … an",
-    "PERFEKT": "hat angeboten",
-        },
- "sich ansehen": {
+    "PRÄTERITUM": "bot an",
+    "PERFEKT": "hat angeboten"
+  },
+  "sich ansehen": {
     "pl": "oglądać sobie",
     "de": "sich ansehen",
-    "PRÄTERITUM": "sah sich … an",
-    "PERFEKT": "hat sich angesehen",
-        },
-
+    "PRÄTERITUM": "sah sich an",
+    "PERFEKT": "hat sich angesehen"
+  },
+  "sich anziehen": {
+    "pl": "ubierać się",
+    "de": "sich anziehen",
+    "PRÄTERITUM": "zog sich an",
+    "PERFEKT": "hat sich angezogen"
+  },
+  "ausdenken": {
+    "pl": "wymyślać",
+    "de": "ausdenken",
+    "PRÄTERITUM": "dachte aus",
+    "PERFEKT": "hat sich ausgedacht"
   }
-
+}
