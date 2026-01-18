@@ -2,7 +2,7 @@ const CACHE_NAME = "french-verbs-v1";
 const FILES = [
   "./",
   "./index.html",
-  "./verbs.json",
+  "./verben.json",
   "./manifest.json"
 ];
 
@@ -26,3 +26,4 @@ self.addEventListener("fetch", e => {
     caches.match(e.request).then(r => r || fetch(e.request))
   );
 });
+
