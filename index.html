@@ -42,27 +42,128 @@ button{padding:12px 16px;margin:6px;font-size:18px}
 </div>
 </div>
 <script>
-let data={},list=[],i=0,mode=null,timer=null,test=false,waiting=false;
-const synth=window.speechSynthesis;
-async function load(){data=await fetch('verben.json').then(r=>r.json());list=Object.keys(data)}
-function speak(t,lang){synth.cancel();const u=new SpeechSynthesisUtterance(t);u.lang=lang;synth.speak(u)}
-function loop(){stop();timer=setInterval(next,4500)}
-function stop(){if(timer){clearInterval(timer);timer=null}synth.cancel()}
-function render(){const k=list[i],v=data[k];if(mode==='PL-D'){v1.textContent=v.pl;v2.textContent=v.de;v3.textContent='Präteritum: '+v['PRÄTERITUM'];v4.textContent='Perfekt: '+v['PERFEKT'];if(!test)speakSeq([v.pl,'pl-PL',v.de,'de-DE',v['PRÄTERITUM'],'de-DE',v['PERFEKT'],'de-DE'])}
-if(mode==='D-PL'){v1.textContent=v.de;v2.textContent=v.pl;v3.textContent='Präteritum: '+v['PRÄTERITUM'];v4.textContent='Perfekt: '+v['PERFEKT'];if(!test)speakSeq([v.de,'de-DE',v.pl,'pl-PL',v['PRÄTERITUM'],'de-DE',v['PERFEKT'],'de-DE'])}
-renderSide()}
-function speakSeq(arr){let j=0;function n(){if(j>=arr.length)return;speak(arr[j],arr[j+1]);j+=2;synth.onend=n}n()}
-function renderSide(){prev3.textContent=list.slice(Math.max(0,i-3),i).join(' · ');next3.textContent=list.slice(i+1,i+4).join(' · ')}
-function prev(){i=(i-1+list.length)%list.length;render()}
-function next(){i=(i+1)%list.length;render()}
+const synth = window.speechSynthesis;
+
+let data = {};
+let list = [];
+let i = 0;
+let mode = null;
+let timer = null;
+let test = false;
+
+// ---------- LOAD DATA ----------
+async function load(){
+  data = await fetch('verben.json').then(r => r.json());
+  list = Object.keys(data);
+  console.log("Loaded verbs:", data);
+}
+
+// ---------- SAFE SPEECH ----------
+function speakSequence(sequence){
+  if(!sequence || !sequence.length) return;
+
+  speechSynthesis.cancel();
+  let index = 0;
+
+  function next(){
+    if(index >= sequence.length) return;
+    const { text, lang } = sequence[index++];
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = lang;
+    u.onend = next;
+    speechSynthesis.speak(u);
+  }
+
+  next();
+}
+
+function speakPLD(v){
+  speakSequence([
+    { text: v.pl, lang: "pl-PL" },
+    { text: v.de, lang: "de-DE" },
+    { text: v["PRÄTERITUM"], lang: "de-DE" },
+    { text: v["PERFEKT"], lang: "de-DE" }
+  ]);
+}
+
+function speakDPL(v){
+  speakSequence([
+    { text: v.de, lang: "de-DE" },
+    { text: v.pl, lang: "pl-PL" },
+    { text: v["PRÄTERITUM"], lang: "de-DE" },
+    { text: v["PERFEKT"], lang: "de-DE" }
+  ]);
+}
+
+// ---------- RENDER ----------
+function render(){
+  const k = list[i];
+  const v = data[k];
+
+  if(mode === "PL-D"){
+    v1.textContent = v.pl;
+    v2.textContent = v.de;
+    v3.textContent = "Präteritum: " + v["PRÄTERITUM"];
+    v4.textContent = "Perfekt: " + v["PERFEKT"];
+    if(!test) speakPLD(v);
+  }
+
+  if(mode === "D-PL"){
+    v1.textContent = v.de;
+    v2.textContent = v.pl;
+    v3.textContent = "Präteritum: " + v["PRÄTERITUM"];
+    v4.textContent = "Perfekt: " + v["PERFEKT"];
+    if(!test) speakDPL(v);
+  }
+
+  renderSide();
+}
+
+// ---------- SIDE LIST ----------
+function renderSide(){
+  prev3.textContent = list.slice(Math.max(0,i-3), i).join(" · ");
+  next3.textContent = list.slice(i+1, i+4).join(" · ");
+}
+
+// ---------- NAV ----------
+function prev(){ i = (i - 1 + list.length) % list.length; render(); }
+function next(){ i = (i + 1) % list.length; render(); }
+
+// ---------- LOOP ----------
+function loop(){ stop(); timer = setInterval(next, 4500); }
+function stop(){ if(timer){ clearInterval(timer); timer=null; } speechSynthesis.cancel(); }
+
+// ---------- BUTTONS ----------
 pldBtn.onclick = () => {
   speechSynthesis.speak(new SpeechSynthesisUtterance(""));
   toggle("PL-D");
 };
 
-function toggle(m){if(mode===m){mode=null;panel.style.display='none';stop();return}mode=m;panel.style.display='block';i=0;render();loop()}
-testBtn.onclick=()=>{test=!test;testBtn.textContent=test?'🧪 Test ON':'🧪 Test OFF';if(!test)loop();else stop()}
-document.addEventListener('pointerdown',e=>{if(!test||waiting)return;waiting=false;next()})
+dplBtn.onclick = () => {
+  speechSynthesis.speak(new SpeechSynthesisUtterance(""));
+  toggle("D-PL");
+};
+
+testBtn.onclick = () => {
+  test = !test;
+  testBtn.textContent = test ? "🧪 Test ON" : "🧪 Test OFF";
+  if(!test) loop(); else stop();
+};
+
+function toggle(m){
+  if(mode === m){
+    mode = null;
+    panel.style.display = "none";
+    stop();
+    return;
+  }
+  mode = m;
+  panel.style.display = "block";
+  i = 0;
+  render();
+  loop();
+}
+
 load();
 </script>
 </body>
