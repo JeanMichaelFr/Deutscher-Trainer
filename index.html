@@ -7,6 +7,13 @@
 <title>Deutscher Trainer</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
+
+#v1 { font-size: 28px; font-weight: bold; }
+#v2 { font-size: 22px; margin-top: 6px; }
+#v3, #v4 { font-size: 14px; color: #666; }
+.panel { background:#fff; }
+
+
 body{font-family:Arial,sans-serif;background:#f4f4f4;padding:16px;touch-action:manipulation;user-select:none}
 .box{background:#fff;max-width:900px;margin:auto;padding:16px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.15)}
 button{padding:12px 16px;margin:6px;font-size:18px}
@@ -44,12 +51,29 @@ button{padding:12px 16px;margin:6px;font-size:18px}
 <script>
 const synth = window.speechSynthesis;
 
+
+let phase = "idle"; // pl, de, done
+let currentVerb = null;
+
 let data = {};
 let list = [];
 let i = 0;
 let mode = null;
 let timer = null;
 let test = false;
+
+let voices = [];
+
+speechSynthesis.onvoiceschanged = () => {
+  voices = speechSynthesis.getVoices();
+};
+
+function getVoice(lang) {
+  return voices.find(v => v.lang === lang) ||
+         voices.find(v => v.lang.startsWith(lang.split('-')[0])) ||
+         null;
+}
+
 
 // ---------- LOAD DATA ----------
 async function load(){
@@ -59,65 +83,45 @@ async function load(){
 }
 
 // ---------- SAFE SPEECH ----------
-function speakSequence(sequence){
-  if(!sequence || !sequence.length) return;
-
-  speechSynthesis.cancel();
-  let index = 0;
-
-  function next(){
-    if(index >= sequence.length) return;
-    const { text, lang } = sequence[index++];
+function speak(text, lang, rate = 0.9) {
+  return new Promise(resolve => {
     const u = new SpeechSynthesisUtterance(text);
     u.lang = lang;
-    u.onend = next;
+    u.voice = getVoice(lang);
+    u.rate = rate;
+
+    u.onend = resolve;
     speechSynthesis.speak(u);
-  }
-
-  next();
+  });
 }
 
-function speakPLD(v){
-  speakSequence([
-    { text: v.pl, lang: "pl-PL" },
-    { text: v.de, lang: "de-DE" },
-    { text: v["PRÄTERITUM"], lang: "de-DE" },
-    { text: v["PERFEKT"], lang: "de-DE" }
-  ]);
+async function speakGerman(v) {
+  await speak(v.de, "de-DE", 0.9);
+  await speak(v["PRÄTERITUM"], "de-DE", 0.85);
+  await speak(v["PERFEKT"], "de-DE", 0.85);
 }
 
-function speakDPL(v){
-  speakSequence([
-    { text: v.de, lang: "de-DE" },
-    { text: v.pl, lang: "pl-PL" },
-    { text: v["PRÄTERITUM"], lang: "de-DE" },
-    { text: v["PERFEKT"], lang: "de-DE" }
-  ]);
-}
 
 // ---------- RENDER ----------
-function render(){
-  const k = list[i];
-  const v = data[k];
+document.addEventListener("pointerdown", async () => {
+  if (mode !== "PL-D") return;
 
-  if(mode === "PL-D"){
-    v1.textContent = v.pl;
-    v2.textContent = v.de;
-    v3.textContent = "Präteritum: " + v["PRÄTERITUM"];
-    v4.textContent = "Perfekt: " + v["PERFEKT"];
-    if(!test) speakPLD(v);
+  if (phase === "wait-de") {
+    v2.textContent = currentVerb.de;
+    v3.textContent = "Präteritum: " + currentVerb["PRÄTERITUM"];
+    v4.textContent = "Perfekt: " + currentVerb["PERFEKT"];
+
+    phase = "speaking-de";
+    await speakGerman(currentVerb);
+    phase = "done";
+    return;
   }
 
-  if(mode === "D-PL"){
-    v1.textContent = v.de;
-    v2.textContent = v.pl;
-    v3.textContent = "Präteritum: " + v["PRÄTERITUM"];
-    v4.textContent = "Perfekt: " + v["PERFEKT"];
-    if(!test) speakDPL(v);
+  if (phase === "done") {
+    next();
   }
+});
 
-  renderSide();
-}
 
 // ---------- SIDE LIST ----------
 function renderSide(){
@@ -130,7 +134,7 @@ function prev(){ i = (i - 1 + list.length) % list.length; render(); }
 function next(){ i = (i + 1) % list.length; render(); }
 
 // ---------- LOOP ----------
-function loop(){ stop(); timer = setInterval(next, 4500); }
+
 function stop(){ if(timer){ clearInterval(timer); timer=null; } speechSynthesis.cancel(); }
 
 // ---------- BUTTONS ----------
