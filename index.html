@@ -59,7 +59,7 @@ let data = {};
 let list = [];
 let i = 0;
 let mode = null;
-let timer = null;
+
 let test = false;
 
 let voices = [];
@@ -101,6 +101,39 @@ async function speakGerman(v) {
   await speak(v["PERFEKT"], "de-DE", 0.85);
 }
 
+async function render() {
+  const k = list[i];
+  const v = data[k];
+  currentVerb = v;
+
+  if (mode === "PL-D") {
+  v1.textContent = v.pl;
+  v2.textContent = "—";
+  v3.textContent = "";
+  v4.textContent = "";
+
+  phase = "wait-de";
+
+  if (!test) {
+    await speak(v.pl, "pl-PL", 0.85);
+  }
+}
+
+
+  if (mode === "D-PL") {
+    v1.textContent = v.de;
+    v2.textContent = v.pl;
+    v3.textContent = "Präteritum: " + v["PRÄTERITUM"];
+    v4.textContent = "Perfekt: " + v["PERFEKT"];
+
+    phase = "done";
+    await speakGerman(v);
+  }
+
+  renderSide();
+}
+
+
 
 // ---------- RENDER ----------
 document.addEventListener("pointerdown", async () => {
@@ -135,7 +168,10 @@ function next(){ i = (i + 1) % list.length; render(); }
 
 // ---------- LOOP ----------
 
-function stop(){ if(timer){ clearInterval(timer); timer=null; } speechSynthesis.cancel(); }
+function stop() {
+  speechSynthesis.cancel();
+}
+
 
 // ---------- BUTTONS ----------
 pldBtn.onclick = () => {
@@ -151,7 +187,8 @@ dplBtn.onclick = () => {
 testBtn.onclick = () => {
   test = !test;
   testBtn.textContent = test ? "🧪 Test ON" : "🧪 Test OFF";
-  if(!test) loop(); else stop();
+  stop();
+
 };
 
 function toggle(m){
@@ -165,7 +202,7 @@ function toggle(m){
   panel.style.display = "block";
   i = 0;
   render();
-  loop();
+  
 }
 
 load();
