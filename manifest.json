@@ -1,6 +1,6 @@
 {
-  "name": "French Conjugation Trainer",
-  "short_name": "French Verbs",
+  "name": "Deutscher Trainer",
+  "short_name": "Deutsch Verbs",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#f4f4f4",
@@ -19,3 +19,4 @@
     }
   ]
 }
+
